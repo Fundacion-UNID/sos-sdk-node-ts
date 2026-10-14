@@ -1,0 +1,4 @@
+interface:
+  display_name: "Preserve shared SOS SDK layering"
+  short_description: "Keep SOSChain Node adapters above the shared core"
+  default_prompt: "Use $preserve-shared-sos-sdk-layering to implement this SOSChain Node adapter without moving it into the shared core."

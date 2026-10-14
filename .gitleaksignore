@@ -1,0 +1,2 @@
+# Synthetic 32-byte HMAC fixture from the original test commit; never a runtime credential.
+824fdb54a8e57033e558bffedcfa805ffe68e7bd:tests/bff-email-assertion.test.mjs:generic-api-key:7

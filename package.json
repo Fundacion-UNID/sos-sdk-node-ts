@@ -1,0 +1,77 @@
+{
+  "name": "sos-sdk-node-ts",
+  "version": "0.1.7",
+  "description": "Product-neutral Node adapters shared by SOSChain, Vet and UHC runtimes",
+  "license": "Apache-2.0",
+  "author": "Connecting Solution & Applications Ltd",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Fundacion-UNID/sos-sdk-node-ts.git"
+  },
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./emergency-dispatch": {
+      "types": "./dist/emergency-dispatch.d.ts",
+      "default": "./dist/emergency-dispatch.js"
+    },
+    "./prompt-audio-runtime": {
+      "types": "./dist/prompt-audio-runtime.d.ts",
+      "default": "./dist/prompt-audio-runtime.js"
+    },
+    "./secure-message-crypto": {
+      "types": "./dist/secure-message-crypto.d.ts",
+      "default": "./dist/secure-message-crypto.js"
+    },
+    "./bundle-sync-service": {
+      "types": "./dist/bundle-sync-service.d.ts",
+      "default": "./dist/bundle-sync-service.js"
+    },
+    "./encounter-transfer-audience-service": {
+      "types": "./dist/encounter-transfer-audience-service.d.ts",
+      "default": "./dist/encounter-transfer-audience-service.js"
+    },
+    "./confidential-channel-cache": {
+      "types": "./dist/confidential-channel-cache.d.ts",
+      "default": "./dist/confidential-channel-cache.js"
+    },
+    "./bff-email-assertion": {
+      "types": "./dist/bff-email-assertion.d.ts",
+      "default": "./dist/bff-email-assertion.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "CHANGELOG.md",
+    "NOTICE",
+    "docs"
+  ],
+  "scripts": {
+    "clean": "node -e \"require('node:fs').rmSync('dist', { recursive: true, force: true })\"",
+    "build": "npm run clean && tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "npm run build && node --test --test-concurrency=1 tests/*.test.mjs",
+    "check": "npm run typecheck && npm test",
+    "prepack": "npm run check"
+  },
+  "dependencies": {
+    "sos-sdk-core-ts": "0.5.2"
+  },
+  "devDependencies": {
+    "@types/node": "^24.10.0",
+    "typescript": "^5.9.3"
+  },
+  "engines": {
+    "node": ">=24"
+  },
+  "private": false,
+  "publishConfig": {
+    "access": "public"
+  }
+}
