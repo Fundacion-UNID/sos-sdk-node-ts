@@ -63,6 +63,12 @@ The receiving application still authorizes the operation and should reject
 replay where it matters. Never expose the shared secret or let a browser set
 the trusted issuer, audience, purpose or identity claims.
 
+`sos-sdk-node-ts/subject-card-directory-client` owns the complete asynchronous
+SOS GW Organization/License search and polling protocol used by every portal
+BFF. It matches exact aliases inside `Organization.sameAs` CSV values and
+rejects removed animal-card DID layouts before UI mapping. See
+[the authorized subject directory contract](docs/AUTHORIZED_SUBJECT_DIRECTORY.md).
+
 ## Secure-message CSPRNG adapter
 
 `sos-sdk-node-ts/secure-message-crypto` exports `NodeSecureRandomSource` and

@@ -43,6 +43,10 @@
     "./bff-email-assertion": {
       "types": "./dist/bff-email-assertion.d.ts",
       "default": "./dist/bff-email-assertion.js"
+    },
+    "./subject-card-directory-client": {
+      "types": "./dist/subject-card-directory-client.d.ts",
+      "default": "./dist/subject-card-directory-client.js"
     }
   },
   "files": [
@@ -61,6 +65,7 @@
     "prepack": "npm run check"
   },
   "dependencies": {
+    "sos-data-utils-ts": "^0.6.12",
     "sos-sdk-core-ts": "0.5.2"
   },
   "devDependencies": {

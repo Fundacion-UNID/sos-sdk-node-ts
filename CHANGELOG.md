@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+- Add the shared trusted-BFF authorized-subject directory client with canonical
+  SOS GW Organization/License routes, real submit/poll HTTP coverage,
+  independent `sameAs` alias matching and fail-closed animal-card DID
+  validation.
+- Document multiple-controller ownership and future explicit principal
+  controller promotion without changing the child or animal subject identity.
 - Add the 2026 development-owner notice and re-establish the public repository
   from a clean source snapshot while
   retaining this changelog as the package release record.
