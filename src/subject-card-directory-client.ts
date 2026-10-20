@@ -80,8 +80,11 @@ export class SosGatewaySubjectDirectoryClient {
     this.requestTimeoutMs = positiveInteger(options.requestTimeoutMs ?? 15_000, 'request_timeout_invalid')
     this.fetchImpl = options.fetchImpl ?? fetch
     this.headers = Object.freeze({
-      'Content-Type': 'application/json',
-      Accept: 'application/json',
+      // The shared GW contract identifies this existing thid/body envelope as
+      // DIDComm plaintext. Compat and strict deployments must never receive it
+      // under the ambiguous legacy application/json media type.
+      'Content-Type': 'application/didcomm-plain+json',
+      Accept: 'application/didcomm-plain+json',
       ...(requiredOptional(options.bearerToken) ? { Authorization: `Bearer ${requiredOptional(options.bearerToken)}` } : {}),
       ...(requiredOptional(options.appId)
         ? buildGatewayApplicationHeaders({

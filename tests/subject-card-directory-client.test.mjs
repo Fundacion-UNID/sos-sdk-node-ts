@@ -39,6 +39,7 @@ test('drives the real asynchronous SOS GW directory protocol over HTTP and match
       url: request.url,
       authorization: request.headers.authorization,
       appId: request.headers.appid,
+      contentType: request.headers['content-type'],
       body: JSON.parse(Buffer.concat(chunks).toString('utf8')),
     })
     const next = responses.shift()
@@ -83,6 +84,7 @@ test('drives the real asynchronous SOS GW directory protocol over HTTP and match
     ])
     assert.ok(requests.every(({ authorization }) => authorization === 'Bearer verified-openid-token'))
     assert.ok(requests.every(({ appId }) => appId === 'ca.example.sos'))
+    assert.ok(requests.every(({ contentType }) => contentType === 'application/didcomm-plain+json'))
     assert.equal(
       requests[0].body.body.data[0].resource.meta.claims['org.schema.Organization.owner.email'],
       'controller@example.ca',

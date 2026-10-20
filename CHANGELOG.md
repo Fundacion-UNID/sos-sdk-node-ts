@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- Send authorized-subject directory submit and poll envelopes with the
+  canonical `application/didcomm-plain+json` media type so compat-mode SOS
+  gateways do not reject card discovery as legacy JSON.
 - Add the shared trusted-BFF authorized-subject directory client with canonical
   SOS GW Organization/License routes, real submit/poll HTTP coverage,
   independent `sameAs` alias matching and fail-closed animal-card DID
