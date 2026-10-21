@@ -1,5 +1,14 @@
 # Changelog
 
+## Unreleased
+
+- Adopt the product-neutral secure organization registration runtime previously
+  specialized in the clinical Node SDK: reviewed controller bootstrap-wallet
+  reconstruction, encrypted verification/reissuance transport, Offer-to-Order
+  confirmation and terminal OperationOutcome rejection. Portal forms, sector
+  admission policy, profile persistence and deployment values remain outside
+  this package.
+
 ## 0.1.13 - 2026-10-21
 
 - Add the trusted-BFF host organization directory client. It submits and polls

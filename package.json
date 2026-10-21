@@ -51,6 +51,10 @@
     "./host-organization-directory-client": {
       "types": "./dist/host-organization-directory-client.d.ts",
       "default": "./dist/host-organization-directory-client.js"
+    },
+    "./secure-organization-registration": {
+      "types": "./dist/secure-organization-registration.d.ts",
+      "default": "./dist/secure-organization-registration.js"
     }
   },
   "files": [
@@ -70,6 +74,8 @@
   },
   "dependencies": {
     "@simplewebauthn/server": "13.3.2",
+    "gdc-common-utils-ts": "2.9.30",
+    "gdc-sdk-node-ts": "2.9.32",
     "sos-data-utils-ts": "0.6.13",
     "sos-sdk-core-ts": "0.5.2"
   },
