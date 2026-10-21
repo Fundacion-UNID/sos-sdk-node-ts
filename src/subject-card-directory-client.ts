@@ -269,6 +269,7 @@ function readAcceptedLicenses(body: unknown, context: SosGatewayRouteContext): A
     const meta = objectRecord(row?.meta || row?.resource?.meta)
     const subjectDid = String(meta.authorizedSubjectDid || '').trim()
     if (!subjectDid) return []
+    if (!isSubjectCardCandidate(subjectDid, context)) return []
     requireCanonicalSubjectDid(subjectDid, context)
     const claims = objectRecord(meta.claims)
     const relatedRoles = String(claims[CLAIM_RELATED_PERSON_ROLE] || '')
@@ -316,6 +317,12 @@ function requireCanonicalSubjectDid(subjectDid: string, context: SosGatewayRoute
   if (!isAnimalSector(context.sector) && !/^did:web:[^\s]+:card:uhc:(?:personal|professional):[^\s]+$/i.test(subjectDid)) {
     throw new Error('human_card_did_invalid')
   }
+}
+
+function isSubjectCardCandidate(subjectDid: string, context: SosGatewayRouteContext): boolean {
+  return isAnimalSector(context.sector)
+    ? subjectDid.toLowerCase().includes(':card:vetchain:')
+    : subjectDid.toLowerCase().includes(':card:uhc:')
 }
 
 function isAnimalSector(sector: string): boolean {

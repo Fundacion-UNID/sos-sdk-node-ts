@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- Keep valid owned human cards discoverable when the same verified identity
+  also has active profile or controller licenses whose authorized subject is
+  not a card DID; malformed card-shaped DIDs still fail closed.
+
 ## 0.1.10 - 2026-10-20
 
 - Discover canonical animal cards through any governed `animal-*` sector,

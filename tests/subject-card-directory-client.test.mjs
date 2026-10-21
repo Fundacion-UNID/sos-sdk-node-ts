@@ -118,6 +118,41 @@ test('rejects a deprecated split animal DID returned by the gateway', async () =
   )
 })
 
+test('keeps an owned human card when the same identity also has a non-card profile license', async () => {
+  const humanCardDid = 'did:web:unid.online:card:uhc:personal:724000000123456789017'
+  const responses = [
+    new Response(null, { status: 202 }),
+    Response.json({ body: { data: [{ resource: { resourceType: 'Bundle', entry: [{ resource: {
+      id: 'human-1',
+      meta: { claims: {
+        'org.schema.Organization.sameAs': humanCardDid,
+        'org.schema.Organization.alternateName': 'Human one',
+        'org.schema.Organization.member.role': 'ONESELF',
+        'org.schema.Organization.owner.telephone': '+34600000000',
+      } },
+    } }] } }] } }),
+    new Response(null, { status: 202 }),
+    Response.json({ body: { data: [{ resource: { data: [{ meta: {
+      authorizedSubjectDid: 'did:web:gateway.example:individual:profile-1',
+      claims: { 'org.schema.Person.telephone': '+34600000000' },
+    } }] } }] } }),
+  ]
+  const client = new SosGatewaySubjectDirectoryClient({
+    baseUrl: 'https://gw.example.invalid',
+    fetchImpl: async () => responses.shift(),
+  })
+
+  const subjects = await client.listAuthorizedIndividualSubjects({
+    tenantId: 'foundation-human', jurisdiction: 'ES', sector: 'onehealth-research',
+  }, {
+    verifiedContact: { telephone: '+34600000000' },
+    pollOptions: { intervalMs: 1, timeoutMs: 100 },
+  })
+
+  assert.equal(subjects.length, 1)
+  assert.equal(subjects[0].subjectDid, humanCardDid)
+})
+
 test('accepts the canonical animal DID from an animal-research tenant', async () => {
   const responses = [
     new Response(null, { status: 202 }),
