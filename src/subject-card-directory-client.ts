@@ -247,7 +247,7 @@ function readOwnedSubjects(
     if (!((verified.email && ownerEmail === verified.email) || (verified.telephone && ownerTelephone === verified.telephone))) return []
     const subjectDid = selectSubjectCardAlias(claims[CLAIM_ORGANIZATION_SAME_AS], context)
     if (!subjectDid) return []
-    const role = context.sector === 'animal-care'
+    const role = isAnimalSector(context.sector)
       ? 'RESPRSN'
       : String(claims[CLAIM_ORGANIZATION_MEMBER_ROLE] || '').trim()
     const relatedPersonId = String(claims[CLAIM_ORGANIZATION_OWNER_IDENTIFIER] || '').trim()
@@ -301,7 +301,7 @@ function readData(body: unknown): any[] {
 
 function selectSubjectCardAlias(value: unknown, context: SosGatewayRouteContext): string | undefined {
   const aliases = publicAliases(value)
-  const candidate = aliases.find((alias) => context.sector === 'animal-care'
+  const candidate = aliases.find((alias) => isAnimalSector(context.sector)
     ? alias.includes(':card:vetchain:')
     : alias.includes(':card:uhc:'))
   if (!candidate) return undefined
@@ -310,12 +310,16 @@ function selectSubjectCardAlias(value: unknown, context: SosGatewayRouteContext)
 }
 
 function requireCanonicalSubjectDid(subjectDid: string, context: SosGatewayRouteContext): void {
-  if (context.sector === 'animal-care' && !parseAnimalCardDidWeb(subjectDid)) {
+  if (isAnimalSector(context.sector) && !parseAnimalCardDidWeb(subjectDid)) {
     throw new Error('animal_card_did_invalid')
   }
-  if (context.sector !== 'animal-care' && !/^did:web:[^\s]+:card:uhc:(?:personal|professional):[^\s]+$/i.test(subjectDid)) {
+  if (!isAnimalSector(context.sector) && !/^did:web:[^\s]+:card:uhc:(?:personal|professional):[^\s]+$/i.test(subjectDid)) {
     throw new Error('human_card_did_invalid')
   }
+}
+
+function isAnimalSector(sector: string): boolean {
+  return sector.toLowerCase().startsWith('animal-')
 }
 
 function publicAliases(value: unknown): string[] {
