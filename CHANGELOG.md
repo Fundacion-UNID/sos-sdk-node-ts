@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 0.1.12 - 2026-10-21
+
 - Add the product-neutral server passkey state machine used by SOSChain, UHC
   and Vet BFFs. It requires platform user verification, binds credentials to
   one verified login and profile, and releases a sealed profile-unlock secret
