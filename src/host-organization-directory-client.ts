@@ -183,7 +183,6 @@ function filterClaims(filters: HostOrganizationDirectoryFilters = {}): Readonly<
 function readPage(value: unknown): HostOrganizationDirectoryPage {
   const root = record(value)
   const bundle = record(root.body || root)
-  if (bundle.resourceType !== 'Bundle' || bundle.type !== 'searchset') throw new Error('host_directory_bundle_invalid')
   const data = Array.isArray(bundle.data) ? bundle.data : []
   const outcome = data.flatMap((entry: unknown) => {
     const response = record(record(entry).response)
@@ -191,6 +190,7 @@ function readPage(value: unknown): HostOrganizationDirectoryPage {
     return result.resourceType === 'OperationOutcome' && Array.isArray(result.issue) ? result.issue : []
   }).map(record).find(issue => ['fatal', 'error'].includes(String(issue.severity || '').toLowerCase()))
   if (outcome) throw new Error(`host_directory_failed:${String(outcome.diagnostics || outcome.code || 'operation_outcome')}`)
+  if (bundle.resourceType !== 'Bundle' || bundle.type !== 'searchset') throw new Error('host_directory_bundle_invalid')
   const organizations = data.flatMap((entry: unknown) => {
     const row = record(entry)
     const response = record(row.response)

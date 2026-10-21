@@ -77,7 +77,7 @@ test('searches the protected host directory and reads one paginated DIDComm Bund
 })
 
 test('surfaces a Bundle OperationOutcome and rejects browser-shaped host selection', async () => {
-  const operationOutcome = { body: { resourceType: 'Bundle', type: 'searchset', data: [{
+  const operationOutcome = { body: { resourceType: 'Bundle', type: 'batch-response', data: [{
     type: 'Organization-search-v1.0',
     response: { status: '403', outcome: { resourceType: 'OperationOutcome', issue: [{ severity: 'error', code: 'forbidden', diagnostics: 'Host operator required.' }] } },
   }] } }

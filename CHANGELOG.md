@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.1.13 - 2026-10-21
 
 - Add the trusted-BFF host organization directory client. It submits and polls
   the canonical host `org.schema/Organization/_search` route, reads a
