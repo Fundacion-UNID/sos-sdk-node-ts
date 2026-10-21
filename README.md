@@ -24,6 +24,15 @@ begins only after exact registry packages are installed and verified.
 
 Product-neutral Node adapters for trusted SOSCHAIN runtimes.
 
+`secure-organization-registration` owns the trusted Node transport used after
+an application has been reviewed: deterministic reconstruction of the exact
+controller bootstrap wallet, encrypted organization verification or credential
+reissuance, and confirmation of the exact accepted Offer through Order. It
+does not own portal forms, admission policy, user authentication, application
+storage, payment policy or professional operations.
+The capability-by-capability source decision is recorded in
+[`docs/ORGANIZATION_REGISTRATION_SOURCE_EVALUATION.md`](docs/ORGANIZATION_REGISTRATION_SOURCE_EVALUATION.md).
+
 ```text
 gdc-* frozen
     ↓
