@@ -69,6 +69,13 @@ BFF. It matches exact aliases inside `Organization.sameAs` CSV values and
 rejects removed animal-card DID layouts before UI mapping. See
 [the authorized subject directory contract](docs/AUTHORIZED_SUBJECT_DIRECTORY.md).
 
+`sos-sdk-node-ts/host-organization-directory-client` is the separate trusted-
+BFF client for a host operator's organization directory. It sends the
+canonical `org.schema/Organization/_search` request, polls the matching
+response route and returns the privacy-minimized, paginated Bundle projection.
+The host jurisdiction and network come from trusted server configuration;
+they are never browser-selected authority.
+
 ## Secure-message CSPRNG adapter
 
 `sos-sdk-node-ts/secure-message-crypto` exports `NodeSecureRandomSource` and

@@ -47,6 +47,10 @@
     "./subject-card-directory-client": {
       "types": "./dist/subject-card-directory-client.d.ts",
       "default": "./dist/subject-card-directory-client.js"
+    },
+    "./host-organization-directory-client": {
+      "types": "./dist/host-organization-directory-client.d.ts",
+      "default": "./dist/host-organization-directory-client.js"
     }
   },
   "files": [

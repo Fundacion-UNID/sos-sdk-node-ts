@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+- Add the trusted-BFF host organization directory client. It submits and polls
+  the canonical host `org.schema/Organization/_search` route, reads a
+  DIDComm-wrapped paginated Bundle, preserves opaque cursors and surfaces
+  Bundle `OperationOutcome` failures without accepting browser-selected host
+  authority.
+
 ## 0.1.12 - 2026-10-21
 
 - Add the product-neutral server passkey state machine used by SOSChain, UHC
