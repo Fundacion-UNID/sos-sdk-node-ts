@@ -6,7 +6,8 @@
   the canonical host `org.schema/Organization/_search` route, reads a
   DIDComm-wrapped paginated Bundle, preserves opaque cursors and surfaces
   Bundle `OperationOutcome` failures without accepting browser-selected host
-  authority.
+  authority. The same client performs status, suspend, reactivate and purge
+  operations and reads their authoritative Bundle results.
 
 ## 0.1.12 - 2026-10-21
 

@@ -93,3 +93,29 @@ test('surfaces a Bundle OperationOutcome and rejects browser-shaped host selecti
   }), /Host operator required/)
   await assert.rejects(client.search({ jurisdiction: 'ES', network: 'test', tenantId: 'attacker' }, {}), /route_context_invalid/)
 })
+
+test('executes one host lifecycle action and reads its authoritative Bundle result', async () => {
+  const requests = []
+  const client = new SosGatewayHostOrganizationDirectoryClient({
+    baseUrl: 'https://gw.example.invalid',
+    fetchImpl: async (url, init) => {
+      requests.push({ url: String(url), body: JSON.parse(String(init.body)) })
+      if (!String(url).endsWith('-response')) return new Response(null, { status: 202 })
+      return Response.json({ body: { resourceType: 'Bundle', type: 'batch-response', data: [{
+        resource: { resourceType: 'Organization', id: 'tenant-1', meta: { claims: {
+          'org.schema.Action.tenantAuthorization.status': 'suspended',
+        } } },
+        response: { status: '200' },
+      }] } })
+    },
+  })
+
+  const result = await client.lifecycle({ jurisdiction: 'ES', network: 'test-network' }, '_disable', {
+    identifierType: 'TAX', identifierValue: 'B12345678', sameAs: 'did:web:clinic.example',
+  }, { intervalMs: 1, timeoutMs: 100 })
+
+  assert.deepEqual(result, { status: 'suspended', organizationId: 'tenant-1' })
+  assert.ok(requests[0].url.endsWith('/host/cds-ES/v1/test-network/registry/org.schema/Organization/_disable'))
+  assert.equal(requests[0].body.body.data[0].resource.meta.claims['org.schema.Organization.identifier.additionalType'], 'TAX')
+  assert.equal(requests[0].body.body.data[0].resource.meta.claims['org.schema.Organization.sameAs'], 'did:web:clinic.example')
+})

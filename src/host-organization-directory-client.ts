@@ -7,6 +7,7 @@ const CLAIM_NAME = 'org.schema.Organization.name'
 const CLAIM_IDENTIFIER_TYPE = 'org.schema.Organization.identifier.additionalType'
 const CLAIM_IDENTIFIER_VALUE = 'org.schema.Organization.identifier.value'
 const CLAIM_JURISDICTION = 'org.schema.Organization.address.addressCountry'
+const CLAIM_SAME_AS = 'org.schema.Organization.sameAs'
 const CLAIM_SECTOR = 'org.schema.Service.category'
 const CLAIM_STATUS = 'org.schema.Action.tenantAuthorization.status'
 
@@ -34,6 +35,7 @@ export type HostOrganizationDirectoryEntry = Readonly<{
   jurisdiction: string
   sector: string
   status: 'active' | 'suspended' | 'revoked'
+  sameAs?: string
   claims: Readonly<Record<string, unknown>>
 }>
 
@@ -52,6 +54,18 @@ export type HostOrganizationDirectorySearch = Readonly<{
   cursor?: string
   requestThid?: string
   pollOptions?: Readonly<{ timeoutMs?: number; intervalMs?: number }>
+}>
+
+export type HostOrganizationLifecycleAction = '_status' | '_disable' | '_enable' | '_purge'
+export type HostOrganizationLifecycleTarget = Readonly<{
+  identifierType: string
+  identifierValue: string
+  sameAs?: string
+}>
+export type HostOrganizationLifecycleResult = Readonly<{
+  status: 'active' | 'suspended' | 'revoked'
+  disposition?: string
+  organizationId?: string
 }>
 
 export type SosGatewayHostOrganizationDirectoryClientOptions = Readonly<{
@@ -116,6 +130,35 @@ export class SosGatewayHostOrganizationDirectoryClient {
       input.pollOptions,
     )
     return readPage(response.body)
+  }
+
+  public async lifecycle(
+    route: HostOrganizationDirectoryRoute,
+    action: HostOrganizationLifecycleAction,
+    target: HostOrganizationLifecycleTarget,
+    options?: Readonly<{ timeoutMs?: number; intervalMs?: number }>,
+  ): Promise<HostOrganizationLifecycleResult> {
+    const context = normalizeRoute(route)
+    const identifierType = required(target.identifierType, 'host_lifecycle_identifier_type_required')
+    const identifierValue = required(target.identifierValue, 'host_lifecycle_identifier_value_required')
+    const thid = `host-organization-lifecycle-${randomUUID()}`
+    const claims = {
+      [CLAIM_IDENTIFIER_TYPE]: identifierType,
+      [CLAIM_IDENTIFIER_VALUE]: identifierValue,
+      ...(optional(target.sameAs) ? { [CLAIM_SAME_AS]: optional(target.sameAs) } : {}),
+    }
+    const body = {
+      resourceType: 'Bundle',
+      type: 'batch',
+      data: [{
+        type: `Organization-${action.slice(1)}-request-v1.0`,
+        request: { method: 'POST', url: `Organization/${action}` },
+        resource: { resourceType: 'Organization', meta: { claims } },
+      }],
+    }
+    const prefix = `/host/cds-${encodeURIComponent(context.jurisdiction)}/v1/${encodeURIComponent(context.network)}/registry/org.schema/Organization`
+    const response = await this.submitAndPoll(`${prefix}/${action}`, `${prefix}/${action}-response`, { thid, body }, options)
+    return readLifecycleResult(response.body)
   }
 
   private async submitAndPoll(
@@ -208,6 +251,7 @@ function readPage(value: unknown): HostOrganizationDirectoryPage {
       jurisdiction: String(claims[CLAIM_JURISDICTION] || ''),
       sector: String(claims[CLAIM_SECTOR] || ''),
       status: status as HostOrganizationDirectoryEntry['status'],
+      ...(optional(claims[CLAIM_SAME_AS]) ? { sameAs: optional(claims[CLAIM_SAME_AS]) } : {}),
       claims,
     })]
   })
@@ -219,6 +263,28 @@ function readPage(value: unknown): HostOrganizationDirectoryPage {
     hasNext: pagination.hasNext === true,
     ...(optional(pagination.nextCursor) ? { nextCursor: optional(pagination.nextCursor) } : {}),
     organizations: Object.freeze(organizations),
+  })
+}
+
+function readLifecycleResult(value: unknown): HostOrganizationLifecycleResult {
+  const root = record(value)
+  const bundle = record(root.body || root)
+  const data = Array.isArray(bundle.data) ? bundle.data : []
+  const issue = data.flatMap((entry: unknown) => {
+    const outcome = record(record(record(entry).response).outcome)
+    return outcome.resourceType === 'OperationOutcome' && Array.isArray(outcome.issue) ? outcome.issue : []
+  }).map(record).find(candidate => ['fatal', 'error'].includes(String(candidate.severity || '').toLowerCase()))
+  if (issue) throw new Error(`host_lifecycle_failed:${String(issue.diagnostics || issue.code || 'operation_outcome')}`)
+  const entry = data.map(record).find(candidate => String(record(candidate.response).status || '').startsWith('2'))
+  if (!entry) throw new Error('host_lifecycle_response_invalid')
+  const resource = record(entry.resource)
+  const claims = record(record(resource.meta).claims)
+  const status = String(claims[CLAIM_STATUS] || '')
+  if (!['active', 'suspended', 'revoked'].includes(status)) throw new Error('host_lifecycle_status_invalid')
+  return Object.freeze({
+    status: status as HostOrganizationLifecycleResult['status'],
+    ...(optional(claims['org.schema.Action.tenantAuthorization.lifecycleDisposition']) ? { disposition: optional(claims['org.schema.Action.tenantAuthorization.lifecycleDisposition']) } : {}),
+    ...(optional(resource.id) ? { organizationId: optional(resource.id) } : {}),
   })
 }
 
@@ -246,6 +312,12 @@ function record(value: unknown): Record<string, any> {
 function optional(value: unknown): string | undefined {
   const result = String(value ?? '').trim()
   return result || undefined
+}
+
+function required(value: unknown, code: string): string {
+  const result = optional(value)
+  if (!result) throw new Error(code)
+  return result
 }
 
 function positiveInteger(value: unknown, code: string): number {
