@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 0.1.10 - 2026-10-20
+
 - Discover canonical animal cards through any governed `animal-*` sector,
   including `animal-research`, instead of treating `animal-care` as the only
   animal subject directory.
