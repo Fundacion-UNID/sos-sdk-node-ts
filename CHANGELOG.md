@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 0.1.11 - 2026-10-20
+
 - Keep valid owned human cards discoverable when the same verified identity
   also has active profile or controller licenses whose authorized subject is
   not a card DID; malformed card-shaped DIDs still fail closed.
