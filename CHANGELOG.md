@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- Discover canonical animal cards through any governed `animal-*` sector,
+  including `animal-research`, instead of treating `animal-care` as the only
+  animal subject directory.
+
 - Send authorized-subject directory submit and poll envelopes with the
   canonical `application/didcomm-plain+json` media type so compat-mode SOS
   gateways do not reject card discovery as legacy JSON.

@@ -117,3 +117,34 @@ test('rejects a deprecated split animal DID returned by the gateway', async () =
     /animal_card_did_invalid/,
   )
 })
+
+test('accepts the canonical animal DID from an animal-research tenant', async () => {
+  const responses = [
+    new Response(null, { status: 202 }),
+    Response.json({ body: { data: [{ resource: { resourceType: 'Bundle', entry: [] } }] } }),
+    new Response(null, { status: 202 }),
+    Response.json({ body: { data: [{ resource: { data: [{ meta: {
+      authorizedSubjectDid: CARD_DID,
+      claims: { 'org.schema.Person.hasOccupation.identifier.value': 'RESPRSN' },
+    } }] } }] } }),
+    new Response(null, { status: 202 }),
+    Response.json({ body: { data: [{ resource: { id: 'animal-1', meta: { claims: {
+      'org.schema.Organization.sameAs': CARD_DID,
+      'org.schema.Organization.additionalType': 'animal',
+      'org.schema.Organization.member.additionalType': 'http://purl.obolibrary.org/obo/NCBITaxon_9615',
+    } } } }] } }),
+  ]
+  const client = new SosGatewaySubjectDirectoryClient({
+    baseUrl: 'https://gw.example.invalid',
+    fetchImpl: async () => responses.shift(),
+  })
+
+  const subjects = await client.listAuthorizedIndividualSubjects({
+    tenantId: 'foundation-animal', jurisdiction: 'ES', sector: 'animal-research',
+  }, {
+    verifiedContact: { email: 'controller@example.org' },
+    pollOptions: { intervalMs: 1, timeoutMs: 100 },
+  })
+
+  assert.equal(subjects[0].subjectDid, CARD_DID)
+})
