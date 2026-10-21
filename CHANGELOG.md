@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+- Add the product-neutral server passkey state machine used by SOSChain, UHC
+  and Vet BFFs. It requires platform user verification, binds credentials to
+  one verified login and profile, and releases a sealed profile-unlock secret
+  only through a short-lived, one-time server grant.
+
 ## 0.1.11 - 2026-10-20
 
 - Keep valid owned human cards discoverable when the same verified identity

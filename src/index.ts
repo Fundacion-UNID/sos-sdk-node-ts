@@ -7,3 +7,4 @@ export * from './bundle-sync-service.js';
 export * from './encounter-transfer-audience-service.js';
 export * from './bff-email-assertion.js';
 export * from './subject-card-directory-client.js';
+export * from './server-passkey-profile.js';
