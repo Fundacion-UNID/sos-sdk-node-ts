@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 0.1.14 - 2026-10-21
+
 - Add a product-neutral server-profile owner assertion for personal passkey
   registration. It binds the selected profile to the authenticated Firebase
   principal without misinterpreting an individual-member actor DID as a
