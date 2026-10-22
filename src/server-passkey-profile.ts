@@ -114,6 +114,21 @@ export type ServerPasskeyProfileServiceOptions = Readonly<{
   accessTtlMs?: number
 }>
 
+/**
+ * Confirms that an authenticated Firebase principal owns the selected server
+ * profile. Personal actor DIDs describe the subject relationship and are not
+ * professional employee identifiers, so they must not be parsed as one.
+ */
+export function assertServerProfileOwner<T extends Readonly<{ ownerId: string }>>(
+  profile: T | undefined,
+  ownerId: string,
+): asserts profile is T {
+  const expectedOwnerId = ownerId.trim()
+  if (!profile || !expectedOwnerId || profile.ownerId !== expectedOwnerId) {
+    throw new Error('profile_not_found')
+  }
+}
+
 /** Product-neutral passkey state machine for SOS, health and animal portal BFFs. */
 export class ServerPasskeyProfileService {
   public constructor(private readonly options: ServerPasskeyProfileServiceOptions) {}
@@ -282,7 +297,7 @@ export function createSimpleWebAuthnCeremonyAdapter(input: Readonly<{
   const rpName = String(input.rpName || '').trim()
   const rpId = String(input.rpId || '').trim()
   const origins = input.origins.map(value => String(value || '').trim()).filter(Boolean)
-  if (!rpName || !rpId || !origins.length || origins.some(origin => !origin.startsWith('https://'))) {
+  if (!rpName || !rpId || !origins.length || origins.some(origin => !isSecureWebAuthnOrigin(origin))) {
     throw new Error('passkey_relying_party_not_configured')
   }
   return {
@@ -342,5 +357,16 @@ export function createSimpleWebAuthnCeremonyAdapter(input: Readonly<{
       if (!verification.verified) throw new Error('passkey_authentication_failed')
       return { newCounter: verification.authenticationInfo.newCounter }
     },
+  }
+}
+
+function isSecureWebAuthnOrigin(origin: string): boolean {
+  try {
+    const parsed = new URL(origin)
+    if (parsed.protocol === 'https:') return true
+    return parsed.protocol === 'http:'
+      && (parsed.hostname === 'localhost' || parsed.hostname === '127.0.0.1' || parsed.hostname === '[::1]')
+  } catch {
+    return false
   }
 }

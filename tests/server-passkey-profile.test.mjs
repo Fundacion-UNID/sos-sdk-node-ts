@@ -2,7 +2,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
-import { ServerPasskeyProfileService, createSimpleWebAuthnCeremonyAdapter } from '../dist/index.js';
+import { ServerPasskeyProfileService, assertServerProfileOwner, createSimpleWebAuthnCeremonyAdapter } from '../dist/index.js';
 
 class MemoryStore {
   credentials = new Map();
@@ -82,4 +82,25 @@ test('builds platform-bound WebAuthn options with mandatory user verification', 
   assert.equal(generated.options.rp.id, 'personal.example');
   assert.equal(generated.options.authenticatorSelection.userVerification, 'required');
   assert.equal(generated.options.authenticatorSelection.residentKey, 'required');
+});
+
+test('accepts the browser secure-context loopback exception without allowing arbitrary HTTP origins', () => {
+  assert.doesNotThrow(() => createSimpleWebAuthnCeremonyAdapter({
+    rpName: 'PetChain local', rpId: '127.0.0.1', origins: ['http://127.0.0.1:3281'],
+  }));
+  assert.throws(() => createSimpleWebAuthnCeremonyAdapter({
+    rpName: 'Invalid remote', rpId: 'portal.example', origins: ['http://portal.example'],
+  }), /passkey_relying_party_not_configured/);
+});
+
+test('binds passkey registration to the Firebase-owned server profile without interpreting an individual actor DID', () => {
+  assert.doesNotThrow(() => assertServerProfileOwner({
+    ownerId: 'owner-1',
+    actorDid: 'did:web:provider.example:tenant:cds-CA-BC:v1:animal-care:individual:multibase:zSubject:member:zRelationship:RESPRSN',
+  }, 'owner-1'));
+  assert.throws(
+    () => assertServerProfileOwner({ ownerId: 'owner-2' }, 'owner-1'),
+    /profile_not_found/,
+  );
+  assert.throws(() => assertServerProfileOwner(undefined, 'owner-1'), /profile_not_found/);
 });

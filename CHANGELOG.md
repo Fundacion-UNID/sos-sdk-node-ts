@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+- Add a product-neutral server-profile owner assertion for personal passkey
+  registration. It binds the selected profile to the authenticated Firebase
+  principal without misinterpreting an individual-member actor DID as a
+  professional employee identifier; mandatory passkey enrollment after PIN
+  verification remains unchanged.
+- Accept the browser WebAuthn secure-context exception for local loopback
+  origins while continuing to reject plain HTTP origins on remote hosts.
+
 - Adopt the product-neutral secure organization registration runtime previously
   specialized in the clinical Node SDK: reviewed controller bootstrap-wallet
   reconstruction, encrypted verification/reissuance transport, Offer-to-Order
