@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- Add product-neutral verification and resolution for an existing professional
+  DID, employee-authorization URN or signed professional SHC. Invitation and
+  device registration remain separate host-managed operations.
+
 ## 0.1.14 - 2026-10-21
 
 - Add a product-neutral server-profile owner assertion for personal passkey

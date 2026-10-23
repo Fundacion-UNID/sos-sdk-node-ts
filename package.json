@@ -55,6 +55,10 @@
     "./secure-organization-registration": {
       "types": "./dist/secure-organization-registration.d.ts",
       "default": "./dist/secure-organization-registration.js"
+    },
+    "./portable-professional-evidence": {
+      "types": "./dist/portable-professional-evidence.d.ts",
+      "default": "./dist/portable-professional-evidence.js"
     }
   },
   "files": [
