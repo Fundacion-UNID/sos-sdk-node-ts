@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+## 0.1.16 - 2026-10-22
+
+- Recover checksum-valid historical animal cards through the provider's exact
+  stored alias and explicit taxonomy claim, while returning only the current
+  species-bound card identity to portals. New writes still reject the retired
+  identifier form.
+
 ## 0.1.15 - 2026-10-22
 
 - Add product-neutral verification and resolution for an existing professional

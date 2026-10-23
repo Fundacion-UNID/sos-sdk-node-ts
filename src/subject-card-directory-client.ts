@@ -1,6 +1,10 @@
 import { randomUUID } from 'node:crypto'
 
-import { parseAnimalCardDidWeb } from 'sos-data-utils-ts/animal-card-interoperability'
+import {
+  migrateHistoricalAnimalCardDidWeb,
+  parseAnimalCardDidWeb,
+  parseNcbiTaxonomyUri,
+} from 'sos-data-utils-ts/animal-card-interoperability'
 import { buildGatewayApplicationHeaders } from 'sos-data-utils-ts/gateway-application-identity'
 
 const CLAIM_AUDIENCE_TYPE = 'org.schema.IndividualProduct.audience.audienceType'
@@ -12,6 +16,7 @@ const CLAIM_ORGANIZATION_OWNER_EMAIL = 'org.schema.Organization.owner.email'
 const CLAIM_ORGANIZATION_OWNER_TELEPHONE = 'org.schema.Organization.owner.telephone'
 const CLAIM_ORGANIZATION_OWNER_IDENTIFIER = 'org.schema.Organization.owner.identifier.value'
 const CLAIM_ORGANIZATION_MEMBER_ROLE = 'org.schema.Organization.member.role'
+const CLAIM_ORGANIZATION_MEMBER_ADDITIONAL_TYPE = 'org.schema.Organization.member.additionalType'
 const CLAIM_RELATED_PERSON_ROLE = 'RelatedPerson.role'
 const CLAIM_OCCUPATION_IDENTIFIER = 'org.schema.Person.hasOccupation.identifier.value'
 
@@ -34,6 +39,8 @@ export type AuthorizedIndividualSubjectDirectoryInput = Readonly<{
 
 export type AuthorizedIndividualSubject = Readonly<{
   subjectDid: string
+  /** Historical provider lookup alias retained only while its record is migrated. */
+  sourceSubjectDid?: string
   organizationId?: string
   role?: string
   grantClaims: Readonly<Record<string, unknown>>
@@ -165,8 +172,10 @@ export class SosGatewaySubjectDirectoryClient {
       )
       const organization = readFirstOrganization(organizationResult.body)
       if (!publicAliases(organization.claims[CLAIM_ORGANIZATION_SAME_AS]).includes(license.subjectDid)) continue
-      subjectsByDid.set(license.subjectDid, Object.freeze({
-        subjectDid: license.subjectDid,
+      const resolvedDid = resolveSubjectCardDid(license.subjectDid, context, organization.claims)
+      subjectsByDid.set(resolvedDid.subjectDid, Object.freeze({
+        subjectDid: resolvedDid.subjectDid,
+        ...(resolvedDid.sourceSubjectDid ? { sourceSubjectDid: resolvedDid.sourceSubjectDid } : {}),
         ...(organization.organizationId ? { organizationId: organization.organizationId } : {}),
         ...(license.role ? { role: license.role } : {}),
         grantClaims: license.grantClaims,
@@ -245,14 +254,16 @@ function readOwnedSubjects(
     const ownerEmail = String(claims[CLAIM_ORGANIZATION_OWNER_EMAIL] || '').trim().toLowerCase()
     const ownerTelephone = String(claims[CLAIM_ORGANIZATION_OWNER_TELEPHONE] || '').trim()
     if (!((verified.email && ownerEmail === verified.email) || (verified.telephone && ownerTelephone === verified.telephone))) return []
-    const subjectDid = selectSubjectCardAlias(claims[CLAIM_ORGANIZATION_SAME_AS], context)
-    if (!subjectDid) return []
+    const sourceSubjectDid = selectSubjectCardAlias(claims[CLAIM_ORGANIZATION_SAME_AS], context)
+    if (!sourceSubjectDid) return []
+    const resolvedDid = resolveSubjectCardDid(sourceSubjectDid, context, claims)
     const role = isAnimalSector(context.sector)
       ? 'RESPRSN'
       : String(claims[CLAIM_ORGANIZATION_MEMBER_ROLE] || '').trim()
     const relatedPersonId = String(claims[CLAIM_ORGANIZATION_OWNER_IDENTIFIER] || '').trim()
     return [Object.freeze({
-      subjectDid,
+      subjectDid: resolvedDid.subjectDid,
+      ...(resolvedDid.sourceSubjectDid ? { sourceSubjectDid: resolvedDid.sourceSubjectDid } : {}),
       ...(String(resource?.id || '').trim() ? { organizationId: String(resource.id).trim() } : {}),
       ...(role ? { role } : {}),
       ...(relatedPersonId ? { relatedPersonId } : {}),
@@ -270,7 +281,6 @@ function readAcceptedLicenses(body: unknown, context: SosGatewayRouteContext): A
     const subjectDid = String(meta.authorizedSubjectDid || '').trim()
     if (!subjectDid) return []
     if (!isSubjectCardCandidate(subjectDid, context)) return []
-    requireCanonicalSubjectDid(subjectDid, context)
     const claims = objectRecord(meta.claims)
     const relatedRoles = String(claims[CLAIM_RELATED_PERSON_ROLE] || '')
       .split(',').map((value) => value.trim().toUpperCase()).filter(Boolean)
@@ -306,8 +316,31 @@ function selectSubjectCardAlias(value: unknown, context: SosGatewayRouteContext)
     ? alias.includes(':card:vetchain:')
     : alias.includes(':card:uhc:'))
   if (!candidate) return undefined
-  requireCanonicalSubjectDid(candidate, context)
+  if (!isAnimalSector(context.sector)) requireCanonicalSubjectDid(candidate, context)
   return candidate
+}
+
+function resolveSubjectCardDid(
+  sourceSubjectDid: string,
+  context: SosGatewayRouteContext,
+  claims: Readonly<Record<string, unknown>>,
+): Readonly<{ subjectDid: string; sourceSubjectDid?: string }> {
+  if (!isAnimalSector(context.sector)) {
+    requireCanonicalSubjectDid(sourceSubjectDid, context)
+    return Object.freeze({ subjectDid: sourceSubjectDid })
+  }
+  if (parseAnimalCardDidWeb(sourceSubjectDid)) {
+    return Object.freeze({ subjectDid: sourceSubjectDid })
+  }
+  const taxonomyId = parseNcbiTaxonomyUri(claims[CLAIM_ORGANIZATION_MEMBER_ADDITIONAL_TYPE])
+  const migrated = taxonomyId
+    ? migrateHistoricalAnimalCardDidWeb(sourceSubjectDid, taxonomyId)
+    : undefined
+  if (!migrated) throw new Error('animal_card_did_invalid')
+  return Object.freeze({
+    subjectDid: migrated.cardDid,
+    sourceSubjectDid: migrated.sourceCardDid,
+  })
 }
 
 function requireCanonicalSubjectDid(subjectDid: string, context: SosGatewayRouteContext): void {

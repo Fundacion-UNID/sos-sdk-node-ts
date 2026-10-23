@@ -15,10 +15,14 @@ The client submits and polls these SOS GW routes:
 confidential resource. SOS GW indexes every normalized non-empty alias as its
 own protected indexed attribute. Exact resolution therefore searches one
 alias; a returned CSV is accepted only when it contains that exact alias.
-Animal entries accept only the current species-bound card profile, in which a
-seven-digit taxonomy context precedes the complete 21-digit card number. The
-removed split `jurisdiction5:animalId16` form fails closed. The exact profile
-literal remains owned and documented by the gateway that issues the card.
+Animal entries returned to consumers use only the current species-bound card
+profile, in which a seven-digit taxonomy context precedes the complete
+21-digit card number. A retired split `jurisdiction5:animalId16` alias can be
+used only to find an existing provider record: its historical checksum and the
+record's explicit animal taxonomy claim must validate before the client derives
+the current identifier. The client retains the old alias separately for exact
+provider lookup and never accepts it for a new write. The exact profile literal
+remains owned and documented by the gateway that issues the card.
 
 Discovery is not authorization. A signed OpenID token is verified by the BFF;
 the SDK receives only the verified contact and uses the token as server-side
