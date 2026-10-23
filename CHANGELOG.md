@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+## 0.1.17 - 2026-10-22
+
+- Consume the shared historical NCBI OBO taxonomy read compatibility used by
+  provider-authorized animal-card discovery.
+
 ## 0.1.16 - 2026-10-22
 
 - Recover checksum-valid historical animal cards through the provider's exact

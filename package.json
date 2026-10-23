@@ -1,6 +1,6 @@
 {
   "name": "sos-sdk-node-ts",
-  "version": "0.1.16",
+  "version": "0.1.17",
   "description": "Product-neutral Node adapters shared by SOSChain, Vet and UHC runtimes",
   "license": "Apache-2.0",
   "author": "Connecting Solution & Applications Ltd",
@@ -80,7 +80,7 @@
     "@simplewebauthn/server": "13.3.2",
     "gdc-common-utils-ts": "2.9.30",
     "gdc-sdk-node-ts": "2.9.32",
-    "sos-data-utils-ts": "0.6.16",
+    "sos-data-utils-ts": "0.6.17",
     "sos-sdk-core-ts": "0.5.2"
   },
   "devDependencies": {
