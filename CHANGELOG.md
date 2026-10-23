@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 0.1.15 - 2026-10-22
+
 - Add product-neutral verification and resolution for an existing professional
   DID, employee-authorization URN or signed professional SHC. Invitation and
   device registration remain separate host-managed operations.
