@@ -2,9 +2,13 @@
 
 ## Unreleased
 
+## 0.1.18 - 2026-11-03
+
 - Add a trusted Node client for subject-card provider advertisements and
   federated authorized-subject reads. Provider failures remain visible while
   successful directories continue to return their cards.
+- Consume `sos-data-utils-ts@0.6.21` and `sos-sdk-core-ts@0.5.4`, the exact
+  published provider-discovery contracts validated by this release.
 
 ## 0.1.17 - 2026-10-22
 
