@@ -16,6 +16,7 @@ const provider = (suffix, subjectKinds = ['animal']) => ({
   subjectKinds,
   operations: ['directory', 'create'],
   providerCode9: REPOSITORY_SAFE_EXAMPLES.organizationBusinessNumber,
+  cardDidHost: 'cards.example.invalid',
 })
 
 test('discovers compatible providers from a data-space JSON API catalog', async () => {
