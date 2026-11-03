@@ -11,3 +11,4 @@ export * from './server-passkey-profile.js';
 export * from './host-organization-directory-client.js';
 export * from './secure-organization-registration.js';
 export * from './portable-professional-evidence.js';
+export * from './subject-card-provider-catalog-client.js';

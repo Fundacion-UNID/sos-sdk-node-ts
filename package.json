@@ -59,6 +59,10 @@
     "./portable-professional-evidence": {
       "types": "./dist/portable-professional-evidence.d.ts",
       "default": "./dist/portable-professional-evidence.js"
+    },
+    "./subject-card-provider-catalog-client": {
+      "types": "./dist/subject-card-provider-catalog-client.d.ts",
+      "default": "./dist/subject-card-provider-catalog-client.js"
     }
   },
   "files": [
