@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+- Discover existing professional employee DID documents from an exact
+  configured provider using country, optional regional jurisdiction,
+  organization legal identifier, sector and verified email. Return only roles
+  whose authoritative DID document binds the expected employee authorization.
+
 ## 0.1.18 - 2026-11-03
 
 - Add a trusted Node client for subject-card provider advertisements and
