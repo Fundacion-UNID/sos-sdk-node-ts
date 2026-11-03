@@ -10,8 +10,7 @@ import {
 import { REPOSITORY_SAFE_EXAMPLES } from 'sos-data-utils-ts/repository-privacy'
 
 const provider = (suffix, subjectKinds = ['animal']) => ({
-  providerId: `${REPOSITORY_SAFE_EXAMPLES.didWeb}:${suffix}`,
-  providerDid: `${REPOSITORY_SAFE_EXAMPLES.didWeb}:${suffix}`,
+  indexProviderDid: `${REPOSITORY_SAFE_EXAMPLES.didWeb}:${suffix}`,
   displayName: `${REPOSITORY_SAFE_EXAMPLES.organizationLegalName} ${suffix}`,
   directoryRoute: `${REPOSITORY_SAFE_EXAMPLES.httpsBaseUrl}/${REPOSITORY_SAFE_EXAMPLES.tenantId}-${suffix}/cds-CA/v1/${REPOSITORY_SAFE_EXAMPLES.sector}`,
   subjectKinds,
@@ -56,6 +55,6 @@ test('queries every compatible directory and preserves partial provider failure'
   })
 
   assert.equal(result.subjects.length, 1)
-  assert.equal(result.subjects[0].providerId, providers[0].providerId)
-  assert.deepEqual(result.unavailableProviderIds, [providers[1].providerId])
+  assert.equal(result.subjects[0].providerId, providers[0].indexProviderDid)
+  assert.deepEqual(result.unavailableProviderIds, [providers[1].indexProviderDid])
 })
