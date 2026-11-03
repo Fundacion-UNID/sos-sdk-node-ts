@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- Add a trusted Node client for subject-card provider advertisements and
+  federated authorized-subject reads. Provider failures remain visible while
+  successful directories continue to return their cards.
+
 ## 0.1.17 - 2026-10-22
 
 - Consume the shared historical NCBI OBO taxonomy read compatibility used by
