@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 0.1.19 - 2026-11-04
+
 - Discover existing professional employee DID documents from an exact
   configured provider using country, optional regional jurisdiction,
   organization legal identifier, sector and verified email. Return only roles
