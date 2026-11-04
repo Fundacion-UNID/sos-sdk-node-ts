@@ -1,6 +1,8 @@
 import { createPublicKey, verify } from 'node:crypto'
 import { inflateRawSync } from 'node:zlib'
 import { buildProfessionalDidWeb } from 'gdc-common-utils-ts/utils/did'
+import { getHealthcareProfessionalRolesBySector } from 'gdc-common-utils-ts/constants/healthcare'
+import type { DataspaceSector } from 'gdc-common-utils-ts/constants/sectors'
 
 export type PortableProfessionalProvider = Readonly<{
   baseUrl: string
@@ -41,6 +43,103 @@ function identifiers(resource: JsonRecord): string[] {
 
 function providerIssuer(provider: PortableProfessionalProvider): string {
   return `${new URL(provider.baseUrl).origin}/${encodeURIComponent(provider.tenantId)}/cds-${encodeURIComponent(provider.jurisdiction)}/v1/${encodeURIComponent(provider.sector)}`
+}
+
+async function resolveProviderDid(provider: PortableProfessionalProvider, fetchImpl: typeof fetch): Promise<string> {
+  const response = await fetchImpl(`${providerIssuer(provider)}/.well-known/did.json`, {
+    headers: { accept: 'application/did+json, application/json' },
+  })
+  if (!response.ok) throw new TypeError('professional_tenant_did_unavailable')
+  const document = record(await response.json())
+  const providerDid = text(document.id)
+  const expectedContext = `:${provider.tenantId}:cds-${provider.jurisdiction}:v1:${provider.sector}`
+  const services = Array.isArray(document.service) ? document.service : []
+  const hasJwks = services.some(service => text(record(service).type) === 'JsonWebKeyService2020'
+    && /^https:\/\//i.test(text(record(service).serviceEndpoint)))
+  if (!providerDid.startsWith('did:web:') || !providerDid.endsWith(expectedContext) || !hasJwks) {
+    throw new TypeError('professional_tenant_did_invalid')
+  }
+  return providerDid
+}
+
+/**
+ * Finds the signed professional DID documents already published beneath one
+ * exact organization. Country, optional region, legal identifier and sector
+ * only reconstruct routing; the authoritative employee DID and authorization
+ * URN still determine every returned role.
+ */
+export async function resolvePortableProfessionalOrganizationEnrollments(input: Readonly<{
+  country: unknown
+  region?: unknown
+  organizationIdentifier: unknown
+  sector: unknown
+  verifiedEmail: unknown
+  providers: readonly PortableProfessionalProvider[]
+  fetchImpl?: typeof fetch
+}>): Promise<readonly PortableProfessionalEnrollment[]> {
+  const country = text(input.country).toUpperCase()
+  const region = text(input.region).toUpperCase()
+  const jurisdiction = region || country
+  const organizationIdentifier = text(input.organizationIdentifier)
+  const sector = text(input.sector).toLowerCase()
+  const verifiedEmail = text(input.verifiedEmail).toLowerCase()
+  if (!/^[A-Z]{2}$/.test(country)) throw new TypeError('professional_country_invalid')
+  if (region && (!new RegExp(`^${country}-[A-Z0-9]{1,3}$`).test(region))) {
+    throw new TypeError('professional_region_country_mismatch')
+  }
+  if (!/^[A-Za-z0-9][A-Za-z0-9._-]{1,127}$/.test(organizationIdentifier)) {
+    throw new TypeError('professional_organization_identifier_invalid')
+  }
+  if (!verifiedEmail) throw new TypeError('verified_email_required')
+  const roleCatalog = getHealthcareProfessionalRolesBySector(sector as DataspaceSector)
+  const roles = Object.values(roleCatalog).filter(role => role.claim.startsWith('ISCO-08|'))
+  if (!roles.length) throw new TypeError('professional_sector_not_allowed')
+  const providers = input.providers.filter(provider => provider.tenantId === organizationIdentifier
+    && provider.jurisdiction.toUpperCase() === jurisdiction
+    && provider.sector.toLowerCase() === sector)
+  if (providers.length === 0) throw new TypeError('professional_provider_not_found')
+  if (providers.length > 1) throw new TypeError('multiple_professional_providers_found')
+
+  const provider = providers[0]
+  const fetchImpl = input.fetchImpl ?? fetch
+  const providerDid = await resolveProviderDid(provider, fetchImpl)
+  const results: PortableProfessionalEnrollment[] = []
+  for (const role of roles) {
+    const professionalDid = buildProfessionalDidWeb({
+      organizationDidWeb: providerDid,
+      email: verifiedEmail,
+      role: role.claim,
+    })
+    const memberPath = professionalDid.slice(`${providerDid}:employee:`.length)
+    const memberId = memberPath.slice(0, memberPath.indexOf(':'))
+    const didUrl = `${providerIssuer(provider)}/employee/${encodeURIComponent(memberId)}/${encodeURIComponent(role.claim)}/did.json`
+    const response = await fetchImpl(didUrl, { headers: { accept: 'application/did+json, application/json' } })
+    if (response.status === 404) continue
+    if (!response.ok) throw new TypeError('professional_directory_unavailable')
+    const document = record(await response.json())
+    if (text(document.id) !== professionalDid) throw new TypeError('professional_did_invalid')
+    const employeeAuthorizationUrn = (Array.isArray(document.alsoKnownAs) ? document.alsoKnownAs : [])
+      .map(String).find(value => EMPLOYEE_AUTHORIZATION_URN_PATTERN.test(value)) || ''
+    const authorization = EMPLOYEE_AUTHORIZATION_URN_PATTERN.exec(employeeAuthorizationUrn)
+    if (!authorization
+      || authorization[1].toUpperCase() !== jurisdiction
+      || authorization[3] !== organizationIdentifier
+      || authorization[5] !== role.code) {
+      throw new TypeError('professional_credential_binding_invalid')
+    }
+    results.push(Object.freeze({
+      sector: provider.sector,
+      employeeAuthorizationUrn,
+      professionalDid,
+      providerDid,
+      gatewayBaseUrl: new URL(provider.baseUrl).origin,
+      tenantId: provider.tenantId,
+      jurisdiction,
+      role: role.claim,
+    }))
+  }
+  if (!results.length) throw new TypeError('professional_profile_not_found')
+  return Object.freeze(results)
 }
 
 function decodeShcQr(value: unknown): string {
@@ -254,19 +353,7 @@ export async function resolvePortableProfessionalEnrollment(input: Readonly<{
 
   const provider = matches[0]
   const gatewayBaseUrl = new URL(provider.baseUrl).origin
-  const response = await fetchImpl(`${providerIssuer(provider)}/.well-known/did.json`, {
-    headers: { accept: 'application/did+json, application/json' },
-  })
-  if (!response.ok) throw new TypeError('professional_tenant_did_unavailable')
-  const document = record(await response.json())
-  const providerDid = text(document.id)
-  const expectedContext = `:${provider.tenantId}:cds-${provider.jurisdiction}:v1:${provider.sector}`
-  const services = Array.isArray(document.service) ? document.service : []
-  const hasJwks = services.some(service => text(record(service).type) === 'JsonWebKeyService2020'
-    && /^https:\/\//i.test(text(record(service).serviceEndpoint)))
-  if (!providerDid.startsWith('did:web:') || !providerDid.endsWith(expectedContext) || !hasJwks) {
-    throw new TypeError('professional_tenant_did_invalid')
-  }
+  const providerDid = await resolveProviderDid(provider, fetchImpl)
   const role = `ISCO-08|${authorizationRoleCode}`
   const professionalDid = buildProfessionalDidWeb({ organizationDidWeb: providerDid, email: verifiedEmail, role })
   return Object.freeze({

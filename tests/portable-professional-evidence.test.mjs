@@ -3,8 +3,12 @@ import assert from 'node:assert/strict'
 import { generateKeyPairSync, sign } from 'node:crypto'
 import { deflateRawSync } from 'node:zlib'
 import test from 'node:test'
+import { buildProfessionalDidWeb } from 'gdc-common-utils-ts/utils/did'
+import { HealthcareActorRoles } from 'gdc-common-utils-ts/constants/healthcare'
+import { EXAMPLE_SECONDARY_EU_COUNTRY } from 'gdc-common-utils-ts/examples'
 import {
   derivePortableProfessionalProviderCandidates,
+  resolvePortableProfessionalOrganizationEnrollments,
   resolvePortableProfessionalEnrollment,
   resolveProfessionalShcEnrollment,
 } from '../dist/portable-professional-evidence.js'
@@ -18,6 +22,8 @@ const provider = Object.freeze({
   sector: 'animal-care',
 })
 const providerDid = 'did:web:authority.example:Example-123:cds-CA-BC:v1:animal-care'
+const providerCountry = provider.jurisdiction.split('-')[0]
+const verifiedProfessionalEmail = 'licensed@example.test'
 
 test('derives only a trusted-host provider candidate from portable routing evidence', () => {
   assert.deepEqual(derivePortableProfessionalProviderCandidates({
@@ -61,6 +67,53 @@ test('resolves one existing authorization URN through the authoritative tenant D
   assert.equal(result.providerDid, providerDid)
   assert.equal(result.sector, 'animal-care')
   assert.equal(result.role, 'ISCO-08|2250')
+})
+
+test('discovers existing professional roles from organization jurisdiction, legal identifier, sector and verified email', async () => {
+  const requested = []
+  const verifiedEmail = verifiedProfessionalEmail
+  const veterinarianDid = buildProfessionalDidWeb({
+    organizationDidWeb: providerDid,
+    email: verifiedEmail,
+    role: HealthcareActorRoles.Veterinarian,
+  })
+  const results = await resolvePortableProfessionalOrganizationEnrollments({
+    country: providerCountry,
+    region: provider.jurisdiction,
+    organizationIdentifier: provider.tenantId,
+    sector: provider.sector,
+    verifiedEmail,
+    providers: [provider],
+    fetchImpl: async url => {
+      requested.push(String(url))
+      if (String(url).endsWith('/.well-known/did.json')) return Response.json({
+        id: providerDid,
+        service: [{ type: 'JsonWebKeyService2020', serviceEndpoint: 'https://authority.example/jwks.json' }],
+      })
+      if (String(url).includes(encodeURIComponent(HealthcareActorRoles.Veterinarian))) return Response.json({
+        id: veterinarianDid,
+        alsoKnownAs: [authorizationUrn],
+      })
+      return new Response('', { status: 404 })
+    },
+  })
+
+  assert.equal(results.length, 1)
+  assert.equal(results[0].tenantId, provider.tenantId)
+  assert.equal(results[0].jurisdiction, provider.jurisdiction)
+  assert.equal(results[0].role, HealthcareActorRoles.Veterinarian)
+  assert.ok(requested.some(url => url.includes('/employee/') && url.includes(encodeURIComponent(HealthcareActorRoles.Veterinarian))))
+})
+
+test('rejects a regional jurisdiction that does not belong to the selected country', async () => {
+  await assert.rejects(resolvePortableProfessionalOrganizationEnrollments({
+    country: EXAMPLE_SECONDARY_EU_COUNTRY,
+    region: provider.jurisdiction,
+    organizationIdentifier: provider.tenantId,
+    sector: provider.sector,
+    verifiedEmail: verifiedProfessionalEmail,
+    providers: [provider],
+  }), /professional_region_country_mismatch/)
 })
 
 test('resolves a professional DID only through its authoritative DID document', async () => {
