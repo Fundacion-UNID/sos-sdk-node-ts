@@ -33,6 +33,7 @@ export class SosSubjectCardProviderCatalogClient {
     const url = new URL(this.catalogUrl)
     url.searchParams.set('subjectKind', filter.subjectKind)
     url.searchParams.set('operation', filter.operation)
+    if (filter.serviceCountry) url.searchParams.set('serviceCountry', filter.serviceCountry)
     const response = await this.fetchImpl(url, {
       headers: {
         Accept: 'application/vnd.api+json',

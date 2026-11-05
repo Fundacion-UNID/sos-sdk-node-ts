@@ -14,6 +14,7 @@ const provider = (suffix, subjectKinds = ['animal']) => ({
   displayName: `${REPOSITORY_SAFE_EXAMPLES.organizationLegalName} ${suffix}`,
   directoryRoute: `${REPOSITORY_SAFE_EXAMPLES.httpsBaseUrl}/${REPOSITORY_SAFE_EXAMPLES.tenantId}-${suffix}/cds-CA/v1/${REPOSITORY_SAFE_EXAMPLES.sector}`,
   subjectKinds,
+  areaServed: ['CA'],
   operations: ['directory', 'create'],
   providerCode9: REPOSITORY_SAFE_EXAMPLES.organizationBusinessNumber,
   cardDidHost: REPOSITORY_SAFE_EXAMPLES.domain,
@@ -35,10 +36,11 @@ test('discovers compatible providers from a data-space JSON API catalog', async 
     const client = new SosSubjectCardProviderCatalogClient({
       catalogUrl: `http://127.0.0.1:${address.port}/providers`,
     })
-    const result = await client.discover({ subjectKind: 'animal', operation: 'create' })
+    const result = await client.discover({ subjectKind: 'animal', operation: 'create', serviceCountry: 'CA' })
     assert.deepEqual(result.map(item => item.providerId), [`${REPOSITORY_SAFE_EXAMPLES.didWeb}:one`])
     assert.match(requests[0], /subjectKind=animal/)
     assert.match(requests[0], /operation=create/)
+    assert.match(requests[0], /serviceCountry=CA/)
   } finally {
     await new Promise(resolve => server.close(resolve))
   }

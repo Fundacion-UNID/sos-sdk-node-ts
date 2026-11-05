@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+## 0.1.20 - 2026-11-04
+
+- Consume the index-service `areaServed` contract from `sos-data-utils-ts@0.6.22`
+  and forward optional ISO country filtering through the remote provider catalog
+  before applying the same filter locally with `sos-sdk-core-ts@0.5.5`.
+
 ## 0.1.19 - 2026-11-04
 
 - Discover existing professional employee DID documents from an exact
