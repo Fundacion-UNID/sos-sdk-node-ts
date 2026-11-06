@@ -14,7 +14,7 @@ reconciliation are documented in
 [`docs/ENCOUNTER_TRANSFER_AUDIENCE_PERSISTENCE.md`](docs/ENCOUNTER_TRANSFER_AUDIENCE_PERSISTENCE.md).
 ## Blocking local-first SDK release
 
-The canonical contract is [`SDK_LAYERING.md`](https://github.com/Fundacion-UNID/sos-data-utils-ts/blob/main/docs/SDK_LAYERING.md). Its
+The canonical contract is [`SDK_LAYERING.md`](https://github.com/soschain/sos-data-utils-ts/blob/main/docs/SDK_LAYERING.md). Its
 indivisible order is **local packages -> full local test matrix -> merge every
 validated branch to `main` -> publish bottom-up -> install exact registry
 versions and commit lockfiles on `main` -> staging**. Never publish to discover
@@ -58,7 +58,7 @@ readback.
 It also does not duplicate the typed clinical Bundle editors exposed by the
 GDC Node SDK. Add a SOS Node adapter only when a real shared channel workflow
 requires runtime behavior, following the
-[clinical accessor adoption matrix](https://github.com/Fundacion-UNID/sos-data-utils-ts/blob/main/docs/CLINICAL_TYPED_ACCESSOR_ADOPTION.md).
+[clinical accessor adoption matrix](https://github.com/soschain/sos-data-utils-ts/blob/main/docs/CLINICAL_TYPED_ACCESSOR_ADOPTION.md).
 Portals and assistants without that editor remain on their verified versions.
 
 The first adapter, `SosEmergencyDispatchClient`, sends an already-authorized

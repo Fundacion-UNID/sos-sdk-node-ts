@@ -6,7 +6,7 @@
   "author": "Connecting Solution & Applications Ltd",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Fundacion-UNID/sos-sdk-node-ts.git"
+    "url": "git+https://github.com/soschain/sos-sdk-node-ts.git"
   },
   "type": "module",
   "main": "dist/index.js",

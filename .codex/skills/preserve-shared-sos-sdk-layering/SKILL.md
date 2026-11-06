@@ -11,7 +11,7 @@ After the cumulative gate, create one version-only release branch and preserve
 its exact published commit as immutable `stable/v<version>`. Never increment
 once per feature or move, reuse, delete or force-update a stable branch.
 
-The canonical contract is [`SDK_LAYERING.md`](https://github.com/Fundacion-UNID/sos-data-utils-ts/blob/main/docs/SDK_LAYERING.md). Its
+The canonical contract is [`SDK_LAYERING.md`](https://github.com/soschain/sos-data-utils-ts/blob/main/docs/SDK_LAYERING.md). Its
 indivisible order is **local packages -> full local test matrix -> merge every
 validated branch to `main` -> publish bottom-up -> install exact registry
 versions and commit lockfiles on `main` -> staging**. Never publish to discover

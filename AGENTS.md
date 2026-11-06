@@ -6,7 +6,7 @@ package version. Merge them to `main`, validate that cumulative state, and only
 then create one version-only release branch. Preserve the exact published SHA
 as immutable `stable/v<version>`; never increment once per feature branch.
 
-The canonical contract is [`SDK_LAYERING.md`](https://github.com/Fundacion-UNID/sos-data-utils-ts/blob/main/docs/SDK_LAYERING.md). Its
+The canonical contract is [`SDK_LAYERING.md`](https://github.com/soschain/sos-data-utils-ts/blob/main/docs/SDK_LAYERING.md). Its
 indivisible order is **local packages -> full local test matrix -> merge every
 validated branch to `main` -> publish bottom-up -> install exact registry
 versions and commit lockfiles on `main` -> staging**. Never publish to discover
