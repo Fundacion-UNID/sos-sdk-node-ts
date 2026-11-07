@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.1.22 - 2026-11-07
 
 - Add an atomic vault capability and a process-owned memory adapter over the
   existing vault implementation. Competing one-time claims serialize and a
