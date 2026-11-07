@@ -7,6 +7,10 @@
   assistant services are not part of this RTC boundary.
 - Preserve the employee DID as the RTC participant identity when its BFF has
   revalidated membership in the call's exact professional Group.
+- Keep provider API keys in the BFF and bind every grant to the canonical call
+  id/room and exact participant. Personal and Professional therefore share one
+  authorization-to-RTC transition instead of maintaining separate signaling
+  implementations.
 
 ## 0.1.20 - 2026-11-04
 
