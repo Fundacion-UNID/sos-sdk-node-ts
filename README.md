@@ -48,6 +48,21 @@ persistence, jobs and prompt-audio runtime behavior. It does not own
 deterministic data contracts, common authorization or sector policy. Downstream
 applications consume it without creating dependencies between one another.
 
+`TransactionalVaultRepository` extends the existing Confidential Storage port
+with atomic operations without changing the frozen base interface. All-local
+BFFs inject `TransactionalMemoryVaultRepository`; durable composition roots
+implement the same capability with their database's native transaction.
+Callbacks must use their supplied transaction port and perform reads before
+writes. A failed operation commits nothing, and competing claims serialize.
+Memory is process-owned, disposable and unsuitable for production persistence.
+
+`createVaultServerPasskeyStore` stores credentials, ceremonies and one-use
+access through that port. The host provides logical collection names and the
+adapter provides deployment/network/host isolation. No account use case should
+select Firestore directly merely because the deployed adapter is Firestore.
+WebAuthn verification, ownership checks and secret sealing remain in the
+existing server passkey service; this store provides atomic persistence.
+
 `BundleSyncDraftService` is the trusted-runtime adapter for the shared durable
 editor outbox. The application injects protected storage, payload protection
 and the real provider executor. The service stores no clear clinical Bundle,

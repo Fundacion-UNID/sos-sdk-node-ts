@@ -1,5 +1,17 @@
 # Changelog
 
+## Unreleased
+
+- Add an atomic vault capability and a process-owned memory adapter over the
+  existing vault implementation. Competing one-time claims serialize and a
+  failed multi-record operation rolls back; durable adapters retain native
+  database transactions. BFF account security uses the same storage port.
+- Add a vault-backed server passkey store. Registration consumes its ceremony
+  atomically; authentication updates the verified counter and issues access in
+  one transaction. Replayed counters and duplicate access are rejected, and
+  competing consumers receive a one-use grant at most once. Logical collection
+  names are supplied by the host; the adapter owns deployment namespacing.
+
 ## 0.1.21 - 2026-11-07
 
 - Add a product-neutral Node helper that issues short-lived LiveKit grants only
