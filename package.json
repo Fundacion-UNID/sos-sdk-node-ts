@@ -1,6 +1,6 @@
 {
   "name": "sos-sdk-node-ts",
-  "version": "0.1.20",
+  "version": "0.1.21",
   "description": "Product-neutral Node adapters shared by SOSChain, Vet and UHC runtimes",
   "license": "Apache-2.0",
   "author": "Connecting Solution & Applications Ltd",
@@ -39,6 +39,10 @@
     "./confidential-channel-cache": {
       "types": "./dist/confidential-channel-cache.d.ts",
       "default": "./dist/confidential-channel-cache.js"
+    },
+    "./portal-rtc-livekit": {
+      "types": "./dist/portal-rtc-livekit.d.ts",
+      "default": "./dist/portal-rtc-livekit.js"
     },
     "./bff-email-assertion": {
       "types": "./dist/bff-email-assertion.d.ts",
@@ -84,7 +88,8 @@
     "@simplewebauthn/server": "13.3.2",
     "gdc-common-utils-ts": "2.9.30",
     "gdc-sdk-node-ts": "2.9.32",
-    "sos-data-utils-ts": "0.6.22",
+    "livekit-server-sdk": "2.19.2",
+    "sos-data-utils-ts": "0.6.28",
     "sos-sdk-core-ts": "0.5.5"
   },
   "devDependencies": {

@@ -1,6 +1,12 @@
 # Changelog
 
-## Unreleased
+## 0.1.21 - 2026-11-07
+
+- Add a product-neutral Node helper that issues short-lived LiveKit grants only
+  after the BFF authorizes a canonical portal call Communication. Chat and
+  assistant services are not part of this RTC boundary.
+- Preserve the employee DID as the RTC participant identity when its BFF has
+  revalidated membership in the call's exact professional Group.
 
 ## 0.1.20 - 2026-11-04
 

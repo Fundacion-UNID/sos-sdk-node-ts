@@ -3,6 +3,7 @@ export * from './emergency-dispatch.js';
 export * from './prompt-audio-runtime.js';
 export * from './secure-message-crypto.js';
 export * from './confidential-channel-cache.js';
+export * from './portal-rtc-livekit.js';
 export * from './bundle-sync-service.js';
 export * from './encounter-transfer-audience-service.js';
 export * from './bff-email-assertion.js';
